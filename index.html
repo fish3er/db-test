@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test BD — WIEiT</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #1a1d24;
+    --panel-2: #22262f;
+    --text: #e6e8eb;
+    --muted: #9aa3ad;
+    --accent: #4a9eff;
+    --green: #4caf50;
+    --red: #ef4444;
+    --border: #2c313b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 24px 16px 64px;
+  }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  h2 { font-size: 1.25rem; margin: 24px 0 12px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .label { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 10px; }
+
+  button {
+    font: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--text);
+    padding: 10px 16px;
+    transition: background .15s, border-color .15s;
+  }
+  button:hover { border-color: var(--accent); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #06131f;
+    font-weight: 600;
+  }
+  .btn-primary:hover { background: #6cb0ff; }
+  .btn-lg { padding: 12px 24px; font-size: 1.05rem; }
+
+  .chip {
+    user-select: none;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--muted);
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+  }
+  .chip.on {
+    background: rgba(74,158,255,.15);
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .chip .cnt { color: var(--muted); font-size: 0.8rem; margin-left: 4px; }
+
+  .len-opt { flex: 1; min-width: 90px; text-align: center; }
+  .len-opt.on { background: rgba(74,158,255,.15); border-color: var(--accent); }
+
+  .counter {
+    color: var(--muted);
+    margin: 16px 0;
+    font-size: .95rem;
+  }
+  .counter strong { color: var(--text); }
+
+  /* progress */
+  .progress {
+    height: 8px;
+    background: var(--panel-2);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .progress > div {
+    height: 100%;
+    background: var(--accent);
+    width: 0;
+    transition: width .25s;
+  }
+
+  .meta { color: var(--muted); font-size: .9rem; margin-bottom: 10px; }
+  .meta .topic { color: var(--accent); }
+  .qtext {
+    white-space: pre-wrap;
+    font-size: 1.1rem;
+    margin: 0 0 18px;
+  }
+  /* inline code/sql inside questions */
+  .qtext code, code.block {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .codeblock {
+    white-space: pre-wrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: #0a0c10;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: .95rem;
+    margin: 12px 0;
+    overflow-x: auto;
+  }
+
+  .opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  .opt:hover { border-color: var(--accent); }
+  .opt.sel { border-color: var(--accent); background: rgba(74,158,255,.12); }
+  .opt .box {
+    flex: 0 0 auto;
+    width: 20px; height: 20px;
+    border: 2px solid var(--muted);
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; line-height: 1;
+  }
+  .opt[data-type="single"] .box { border-radius: 999px; }
+  .opt[data-type="multi"] .box { border-radius: 5px; }
+  .opt.sel .box { border-color: var(--accent); color: var(--accent); }
+  .opt .txt { white-space: pre-wrap; }
+  .opt.disabled { cursor: default; }
+  .opt.disabled:hover { border-color: var(--border); }
+  .opt.correct { border-color: var(--green); background: rgba(76,175,80,.15); }
+  .opt.correct .box { border-color: var(--green); color: var(--green); }
+  .opt.wrong { border-color: var(--red); background: rgba(239,68,68,.15); }
+  .opt.wrong .box { border-color: var(--red); color: var(--red); }
+
+  textarea {
+    width: 100%;
+    min-height: 110px;
+    resize: vertical;
+    font: inherit;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  textarea:focus { outline: none; border-color: var(--accent); }
+
+  .verdict { font-weight: 600; margin: 14px 0 6px; font-size: 1.05rem; }
+  .verdict.ok { color: var(--green); }
+  .verdict.bad { color: var(--red); }
+  .note {
+    color: var(--muted);
+    background: var(--panel-2);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+  }
+  .answer-box {
+    background: rgba(76,175,80,.1);
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+  }
+  .answer-box .label { color: var(--green); margin-bottom: 4px; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .spacer { flex: 1; }
+
+  /* result */
+  .score-big { font-size: 3rem; font-weight: 700; }
+  .score-pct { font-size: 1.4rem; color: var(--accent); }
+  .review-item {
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+  }
+  .review-item.good { background: rgba(76,175,80,.1); border-color: rgba(76,175,80,.5); }
+  .review-item.bad { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.5); }
+  .review-item .rq { white-space: pre-wrap; margin-bottom: 8px; }
+  .review-item .ans { font-size: .95rem; margin: 4px 0; }
+  .review-item .ans .k { color: var(--muted); }
+
+  .hidden { display: none; }
+  .link-btn {
+    background: none; border: none; color: var(--accent); padding: 0;
+    text-decoration: underline; cursor: pointer;
+  }
+  .link-btn:hover { border: none; color: #6cb0ff; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+// ====================== BAZA PYTAŃ ======================
+// type: "single" | "multi" | "open"
+const QUESTIONS = [
+  // ============ ROLE I UPRAWNIENIA ============
+  {
+    id: "roles-reporter-reader",
+    topic: "Role / uprawnienia",
+    type: "single",
+    question: "Użytkownik ma przypisaną rolę 'reporter', a rola reporter ma przypisaną rolę 'reader'. Rola 'reader' ma uprawnienia do czytania wierszy w tabeli 'posts'. Roli 'reporter' nie przekazano bezpośrednio takich uprawnień. Co musi zrobić użytkownik, żeby móc przeczytać wiersze z tabeli 'posts'?",
+    options: [
+      { text: "Ustawić swoją aktualną rolę na 'reporter'.", correct: true },
+      { text: "Ustawić swoją aktualną rolę na 'reader'.", correct: false },
+      { text: "Użyć komendy GRANT nazwa_roli TO nazwa_użytkownika.", correct: false },
+      { text: "Podać hasło do roli 'reader'.", correct: false },
+      { text: "Podać hasło do roli 'reporter'.", correct: false },
+      { text: "Zdobyć od administratora więcej uprawnień, niż przyznano mu do tej pory.", correct: false }
+    ],
+    note: "SET ROLE reporter — przyjmujesz rolę reporter, która dziedziczy reader → masz SELECT."
+  },
+  {
+    id: "roles-analyst-viewer",
+    topic: "Role / uprawnienia",
+    type: "single",
+    question: "Użytkownik ma przypisaną rolę 'analyst', a rola analyst ma przypisaną rolę 'viewer'. Rola 'viewer' ma uprawnienia do czytania wierszy w tabeli 'ratings'. Roli 'viewer' nie przekazano bezpośrednio takich uprawnień. Co musi zrobić użytkownik, żeby móc przeczytać wiersze z tabeli 'ratings'?",
+    options: [
+      { text: "Użyć komendy SET ROLE.", correct: true },
+      { text: "Użyć funkcji CURRENT_ROLE().", correct: false },
+      { text: "Zmienić swoją aktualną rolę dwukrotnie.", correct: false },
+      { text: "Użyć komendy ACTIVATE ROLE.", correct: false },
+      { text: "Zdobyć od administratora więcej uprawnień, niż przyznano mu do tej pory.", correct: false }
+    ]
+  },
+  {
+    id: "roles-sql-true",
+    topic: "Role / uprawnienia",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania dotyczące użycia ról w SQL.",
+    options: [
+      { text: "Użytkownik może odpowiednią komendą aktywować jednocześnie drugą rolę, której sam nie posiada, ale która została przyznana jego obecnej roli.", correct: true },
+      { text: "Aktywowanie roli jest potrzebne do przekazania jej uprawnień dalej, ale nie do korzystania samemu z uprawnień tej roli.", correct: false },
+      { text: "Użytkownik nie może mieć jednocześnie aktywnych wielu niepowiązanych ze sobą ról.", correct: false },
+      { text: "Rolę możemy przyznać innej roli tylko wtedy, jeśli dla roli 'otrzymującej' ustawimy hasło.", correct: false }
+    ]
+  },
+  {
+    id: "permissions-sql",
+    topic: "Role / uprawnienia",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania dotyczące uprawnień w SQL.",
+    options: [
+      { text: "Uprawnienie DELETE ON exam.positive_grades pozwoliłoby na usuwanie wierszy z tabeli positive_grades.", correct: true },
+      { text: "Można nadać uprawnienie z lub bez możliwości nadawania go dalej.", correct: true },
+      { text: "Istnieje specjalne uprawnienie ALL PRIVILEGES.", correct: true },
+      { text: "Próba czytania wierszy z tabeli, do której brak użytkownikowi uprawnień, skutkuje zwróceniem pustej tabeli wynikowej.", correct: false }
+    ],
+    note: "Brak uprawnień → zwraca BŁĄD, nie pustą tabelę."
+  },
+
+  // ============ NULL ============
+  {
+    id: "null-expressions",
+    topic: "NULL",
+    type: "multi",
+    question: "Które z poniższych wyrażeń dają wartość NULL?",
+    options: [
+      { text: "NULL = NULL", correct: true },
+      { text: "NULL AND TRUE", correct: true },
+      { text: "NULL IN ('a', 'b', NULL)", correct: true },
+      { text: "NULL OR TRUE", correct: false },
+      { text: "NOT NULL", correct: true }
+    ],
+    note: "NULL OR TRUE = TRUE (krótkie spięcie). NULL AND TRUE = NULL. NOT NULL = NULL. NULL IN (...,NULL) = NULL."
+  },
+  {
+    id: "null-equals-null",
+    topic: "NULL",
+    type: "multi",
+    question: "Które z poniższych wyrażeń dają wartość =NULL=?",
+    options: [
+      { text: "FALSE OR NULL", correct: true },
+      { text: "NULL AND FALSE", correct: false },
+      { text: "NULL <> NULL", correct: true },
+      { text: "NOT NOT NULL", correct: true },
+      { text: "NULL IN (SELECT 'dummy' WHERE NULL)", correct: false }
+    ],
+    note: "NULL AND FALSE = FALSE (krótkie spięcie). NULL IN (empty set) = FALSE."
+  },
+  {
+    id: "null-where",
+    topic: "NULL",
+    type: "open",
+    question: "W tabeli customers jest 91 wierszy. W kolumnie fax tej tabeli są 22 wartości NULL. Ile wierszy zwróci poniższe zapytanie?\n\nSELECT * FROM customers WHERE NULL",
+    correctAnswer: "0",
+    note: "WHERE NULL jest traktowany jako NIE-prawda → 0 wierszy."
+  },
+
+  // ============ NORMALIZACJA ============
+  {
+    id: "nf-multivalued",
+    topic: "Normalizacja",
+    type: "single",
+    question: "Schemat bazy zakłada użycie atrybutów wielowartościowych. W związku z tym schemat bazy na pewno nie jest w:",
+    options: [
+      { text: "1NF", correct: true },
+      { text: "3NF", correct: false },
+      { text: "4NF", correct: false },
+      { text: "BCNF", correct: false }
+    ],
+    note: "Atrybut wielowartościowy łamie 1NF (brak atomowości). Skoro nie ma 1NF → nie ma niczego wyżej."
+  },
+  {
+    id: "nf-dependency-preserving",
+    topic: "Normalizacja",
+    type: "single",
+    question: "Przeprowadzana przez nas dekompozycja schematu bazy zachowuje zależności ('is dependency preserving'). Tzn. dla każdej zależności funkcjonalnej wciąż można znaleźć taki schemat relacji, w którym znajdują się razem wszystkie atrybuty obu stron tej zależności. Uzyskany schemat bazy na pewno nie jest w:",
+    options: [
+      { text: "BCNF", correct: true },
+      { text: "3NF", correct: false },
+      { text: "4NF", correct: false },
+      { text: "1NF", correct: false }
+    ],
+    note: "Dekompozycja zachowująca zależności + lossless join — gwarantowana tylko do 3NF, NIE do BCNF."
+  },
+
+  // ============ ALGEBRA RELACYJNA ============
+  {
+    id: "ra-cardinality",
+    topic: "Algebra relacyjna",
+    type: "multi",
+    question: "Które z poniższych operatorów algebry relacyjnej mogą dać w wyniku relację mającą inną liczbę krotek niż (choćby jedna) relacja wejściowa?",
+    options: [
+      { text: "× (iloczyn kartezjański)", correct: true },
+      { text: "Π (projekcja)", correct: true },
+      { text: "⋈ (natural join)", correct: true },
+      { text: "σ (selekcja)", correct: true },
+      { text: "∪ (suma)", correct: true },
+      { text: "∩ (przecięcie)", correct: true },
+      { text: "− (różnica)", correct: true },
+      { text: "ρ (przemianowanie)", correct: false }
+    ],
+    note: "Tylko ρ (rename) nigdy nie zmienia liczby krotek. Reszta — może."
+  },
+  {
+    id: "ra-cross-join",
+    topic: "Algebra relacyjna",
+    type: "open",
+    question: "Napisz przykładowe zapytanie SQL odpowiadające poniższemu wyrażeniu algebry relacyjnej (DISTINCT można pominąć):\n\nσ_units_in_stock=0(products) ∪ σ_discontinued=1(products)",
+    correctAnswer: "SELECT * FROM products WHERE units_in_stock = 0 UNION SELECT * FROM products WHERE discontinued = 1;"
+  },
+  {
+    id: "ra-projection-selection",
+    topic: "Algebra relacyjna",
+    type: "open",
+    question: "Napisz przykładowe zapytanie SQL odpowiadające poniższemu wyrażeniu algebry relacyjnej:\n\nΠ_product_name(σ_units_in_stock=0(products))",
+    correctAnswer: "SELECT product_name FROM products WHERE units_in_stock = 0;"
+  },
+  {
+    id: "ra-cross",
+    topic: "Algebra relacyjna",
+    type: "open",
+    question: "Napisz przykładowe wyrażenie algebry relacyjnej odpowiadające poniższemu zapytaniu SQL:\n\nSELECT first_name, last_name, category_name\nFROM employees, categories",
+    correctAnswer: "Π_{first_name, last_name, category_name}(employees × categories)"
+  },
+
+  // ============ JOINY I KOLUMNY ============
+  {
+    id: "join-columns-min",
+    topic: "JOIN",
+    type: "multi",
+    question: "Wybierz zapytania, które dadzą wynikową tabelę z najmniejszą liczbą kolumn. Jeśli wszystkie zapytania dadzą takie same liczby kolumn — zaznacz wszystkie. Można przyjąć, że customer_id jest kluczem obcym z orders do customers i nie może być NULLem.",
+    options: [
+      { text: "SELECT * FROM orders o NATURAL RIGHT JOIN customers c;", correct: true },
+      { text: "SELECT * FROM orders o JOIN customers c ON o.customer_id = c.customer_id;", correct: false },
+      { text: "SELECT * FROM orders o, customers c WHERE o.customer_id = c.customer_id;", correct: false },
+      { text: "SELECT * FROM orders o FULL JOIN customers c ON o.customer_id = c.customer_id;", correct: false }
+    ],
+    note: "NATURAL JOIN łączy w jedną kolumnę wspólne nazwy (customer_id) → wynik ma o 1 kolumnę mniej."
+  },
+  {
+    id: "join-self-not-equal",
+    topic: "JOIN",
+    type: "open",
+    question: "W tabeli users kluczem głównym jest user_id, a liczba wszystkich wierszy to 10. Ile będzie wierszy w wyniku zapytania?\n\nSELECT u1.user_name, u2.user_name FROM users u1, users u2 WHERE u1.user_id <> u2.user_id;",
+    correctAnswer: "90",
+    note: "10×10 − 10 (par gdzie u1=u2) = 90."
+  },
+  {
+    id: "join-self-distinct",
+    topic: "JOIN",
+    type: "open",
+    question: "W tabeli users kluczem głównym jest user_id, a liczba wszystkich wierszy to 15. Ile będzie wierszy w wyniku zapytania?\n\nSELECT DISTINCT u1.user_name, u2.user_name FROM users u1 JOIN users u2 USING(user_id);",
+    correctAnswer: "15",
+    note: "USING(user_id) → join po user_id (PK), więc każdy wiersz łączy się sam ze sobą → 15 par (każdy z samym sobą)."
+  },
+  {
+    id: "join-cross-less",
+    topic: "JOIN",
+    type: "open",
+    question: "W tabeli accounts kluczem głównym jest name, a liczba wszystkich wierszy to 8. Ile będzie wierszy w wyniku poniższego zapytania?\n\nSELECT a1.name, a2.name FROM accounts a1 CROSS JOIN accounts a2 WHERE a1.name < a2.name;",
+    correctAnswer: "28",
+    note: "C(8,2) = 8*7/2 = 28."
+  },
+  {
+    id: "join-full-outer-using",
+    topic: "JOIN",
+    type: "open",
+    question: "W tabeli accounts kluczem głównym jest name, a liczba wszystkich wierszy to 8. Ile będzie wierszy w wyniku poniższego zapytania?\n\nSELECT a1.name, a2.name FROM accounts a1 FULL OUTER JOIN accounts a2 USING(name);",
+    correctAnswer: "8",
+    note: "Każdy wiersz łączy się z sobą samym (PK = name), brak NULLi → 8."
+  },
+
+  // ============ SELECT / WYRAŻENIA ============
+  {
+    id: "select-columns-count",
+    topic: "SELECT",
+    type: "open",
+    question: "Ile będzie kolumn w wyniku poniższego zapytania?\n\nSELECT product_id, product_name, 201, (quantity * unit_price)\nFROM products",
+    correctAnswer: "4"
+  },
+  {
+    id: "select-row-count-or-d",
+    topic: "SELECT",
+    type: "open",
+    question: "Tabela users zawiera trzy kolumny typu id INT, name VARCHAR(50) i login_data VARCHAR(100). Podaj zawartość przykładowego wiersza tabeli, który NIE zostałby zwrócony przez poniższe zapytanie.\n\nSELECT id, name, login_data FROM users WHERE name > 'D' OR name <= 'D';",
+    correctAnswer: "(1, NULL, 'cokolwiek')",
+    note: "Wiersz z NULL w kolumnie name — bo NULL > 'D' = NULL, NULL <= 'D' = NULL, NULL OR NULL = NULL → wiersz pominięty."
+  },
+  {
+    id: "select-union-except",
+    topic: "SELECT",
+    type: "open",
+    question: "Ile będzie wierszy w wyniku zapytania?\n\nSELECT 'a' AS txt\nUNION SELECT 'b'\nUNION SELECT 'c'\nEXCEPT SELECT 'c'",
+    correctAnswer: "2",
+    note: "{'a','b','c'} EXCEPT {'c'} = {'a','b'} → 2 wiersze."
+  },
+  {
+    id: "where-uk",
+    topic: "SELECT / WHERE",
+    type: "open",
+    question: "Jakim najkrótszym ciągiem znaków można uzupełnić lukę (zastąpić ciąg pytajników), żeby w wyniku otrzymać dokładnie wiersze klientów spoza Wielkiej Brytanii ('UK')?\n\nSELECT *\nFROM customers\nWHERE country ??? 'UK';",
+    correctAnswer: "<>",
+    note: "Najkrótsze: <> (alternatywa dla !=). UWAGA: NULL country nie zostanie zwrócony — zwykle to akceptowalne."
+  },
+  {
+    id: "where-bottle",
+    topic: "SELECT / WHERE",
+    type: "open",
+    question: "Czym można uzupełnić lukę, żeby dostać wiersze produktów, które w kolumnie quantity_per_unit zawierają na początku, w środku lub na końcu napisu frazę 'bottle'?\n\nSELECT product_name, quantity_per_unit, unit_price\nFROM products\nWHERE quantity_per_unit ???;",
+    correctAnswer: "LIKE '%bottle%'"
+  },
+  {
+    id: "where-phone-paren",
+    topic: "SELECT / WHERE",
+    type: "open",
+    question: "Czym można uzupełnić lukę, żeby dostać wiersze dokładnie tych klientów, których numery telefonów zaczynają się od nawiasu otwierającego?\n\nSELECT company_name, phone\nFROM customers\nWHERE phone ???;",
+    correctAnswer: "LIKE '(%'"
+  },
+  {
+    id: "case-when-coalesce",
+    topic: "SELECT",
+    type: "open",
+    question: "Zaproponuj wyrażenie, którym można zastąpić wyrażenie CASE z tego zapytania (max 25 znaków):\n\nSELECT company_name,\n  CASE WHEN fax IS NULL THEN 'unknown' ELSE fax END\nFROM customers",
+    correctAnswer: "COALESCE(fax, 'unknown')"
+  },
+
+  // ============ EXISTS / PODZAPYTANIA ============
+  {
+    id: "exists-uncorrelated-orders",
+    topic: "Podzapytania",
+    type: "open",
+    question: "Jakie wyrażenie można umieścić po słowie WHERE, żeby osiągnąć taki sam efekt, używając tylko podzapytania nieskorelowanego?\n\nSELECT company_name\nFROM customers c\nWHERE EXISTS (SELECT customer_id FROM orders\n              WHERE customer_id = c.customer_id AND\n                    order_date > '1998-04-11');",
+    correctAnswer: "customer_id IN (SELECT customer_id FROM orders WHERE order_date > '1998-04-11')"
+  },
+  {
+    id: "exists-uncorrelated-beverages",
+    topic: "Podzapytania",
+    type: "open",
+    question: "Jakie wyrażenie można umieścić po słowie WHERE, żeby osiągnąć taki sam efekt, używając tylko podzapytania nieskorelowanego?\n\nSELECT product_name\nFROM products p\nWHERE EXISTS (SELECT 1 FROM categories\n              WHERE category_id = p.category_id AND\n                    category_name = 'Beverages');",
+    correctAnswer: "p.category_id IN (SELECT category_id FROM categories WHERE category_name = 'Beverages')"
+  },
+
+  // ============ KLUCZE / CONSTRAINTS ============
+  {
+    id: "primary-key-true",
+    topic: "Klucze",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat klucza głównego w tabelach SQL.",
+    options: [
+      { text: "Kolumna klucza głównego jest automatycznie traktowana tak, jakby był na niej założony warunek UNIQUE.", correct: true },
+      { text: "Kolumna klucza głównego jest automatycznie traktowana tak, jakby był na niej założony warunek NOT NULL.", correct: true },
+      { text: "Klucz główny może być wielokolumnowy.", correct: true },
+      { text: "Kolumna klucza głównego musi być numeryczna.", correct: false },
+      { text: "Zadeklarowanie kolumny typu INT jako PRIMARY KEY powoduje, że system bazodanowy automatycznie ustawia odpowiednią wartość w tej kolumnie dla nowych wierszy.", correct: false }
+    ],
+    note: "INT PRIMARY KEY NIE jest auto-increment — trzeba SERIAL/IDENTITY/AUTO_INCREMENT."
+  },
+  {
+    id: "foreign-key-true",
+    topic: "Klucze",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat klucza obcego w SQL.",
+    options: [
+      { text: "Aby można było utworzyć warunek klucza obcego, we wskazywanej tabeli musi być założony warunek UNIQUE lub PRIMARY KEY na wskazywanych przez klucz kolumnach.", correct: true },
+      { text: "Warunek klucza obcego może być usunięty lub dodany dla już istniejącej tabeli.", correct: true },
+      { text: "Utworzenie warunku klucza obcego sprawia, że wskazywanej tabeli nie można usunąć komendą DROP TABLE table_name;.", correct: true },
+      { text: "Tabela może mieć maksymalnie jeden klucz obcy jednocześnie.", correct: false },
+      { text: "Utworzenie warunku klucza obcego sprawia, że tabeli zależnej nie można usunąć komendą DROP TABLE table_name;.", correct: false },
+      { text: "Utworzenie warunku klucza obcego sprawia, że kolumny klucza obcego w tabeli zależnej nie przyjmują wartości NULL.", correct: false }
+    ]
+  },
+  {
+    id: "on-delete-values",
+    topic: "Klucze",
+    type: "open",
+    question: "W kodzie definiującym tabelę wykorzystano następujący warunek integralnościowy. Jaka treść mogła się znaleźć w luce? Podaj dwie przykładowe odpowiedzi.\n\nFOREIGN KEY (invoice_month, invoice_number)\nREFERENCES invoices (invoice_month, invoice_number)\nON DELETE ???",
+    correctAnswer: "CASCADE, SET NULL, SET DEFAULT, RESTRICT, NO ACTION (dowolne dwie)"
+  },
+
+  // ============ CHECK / WIDOKI ============
+  {
+    id: "check-constraint",
+    topic: "Constraints",
+    type: "open",
+    question: "Chcemy, aby tytuł posta nie mógł się zaczynać od małej litery. Dodajemy warunek poniższą komendą. Czym można uzupełnić lukę?\n\nCREATE TABLE posts (\n    id INT PRIMARY KEY,\n    title VARCHAR(100) NOT NULL,\n    contents TEXT NOT NULL,\n    ??? (title ~ '^[^a-z]')\n);",
+    correctAnswer: "CHECK"
+  },
+  {
+    id: "view-cascaded-local",
+    topic: "Widoki",
+    type: "open",
+    question: "Mamy następujący kod. Jakim pięcioliterowym słowem można zastąpić 'CASCADED', tak żeby wciąż nie można było dodać przez widok ids_2 wiersza, który nie byłby przez ten widok widoczny?\n\nCREATE TABLE ids (id INT PRIMARY KEY);\nCREATE VIEW ids_2 AS SELECT id FROM ids WHERE id % 2 = 0\nWITH CASCADED CHECK OPTION;",
+    correctAnswer: "LOCAL"
+  },
+  {
+    id: "view-cascaded-check",
+    topic: "Widoki",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat CASCADED CHECK OPTION.",
+    options: [
+      { text: "Może powodować sprawdzanie większej liczby klauzul WHERE.", correct: true },
+      { text: "Nie jest potrzebne, jeśli zamiast tego w każdej możliwej definicji w hierarchii będzie użyte LOCAL CHECK OPTION.", correct: true },
+      { text: "Powoduje automatyczne, rekurencyjne analizowanie przez system warunków klucza obcego w wielu tabelach.", correct: false },
+      { text: "Służy temu, żeby powiodły się pewne operacje modyfikujące dane, które normalnie zakończyłyby się błędem.", correct: false },
+      { text: "Umożliwia usunięcie wiersza razem z innymi wierszami od niego zależnymi.", correct: false },
+      { text: "Umożliwia ograniczenie wierszy w wyniku komendy SELECT.", correct: false }
+    ]
+  },
+  {
+    id: "views-updatable",
+    topic: "Widoki",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat widoków i widoków automatycznie aktualizowalnych.",
+    options: [
+      { text: "Widok bez podzapytania ale z GROUP BY nie może być automatycznie aktualizowalny.", correct: true },
+      { text: "Widok z podzapytaniem (subquery) nie może być automatycznie aktualizowalny.", correct: true },
+      { text: "Widok bez podzapytania ale z JOINem nie może być automatycznie aktualizowalny.", correct: true },
+      { text: "Widok tworzymy komendą CREATE TEMPORARY TABLE.", correct: false },
+      { text: "Widok tworzymy komendą CREATE TABLE AS.", correct: false }
+    ],
+    note: "Widok tworzymy CREATE VIEW. Widoki z agregatami/joinami/podzapytaniami nie są auto-updatable."
+  },
+
+  // ============ INSERT / UPSERT ============
+  {
+    id: "insert-select",
+    topic: "INSERT",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat komendy INSERT INTO połączonej z SELECT.",
+    options: [
+      { text: "Umożliwia zastąpienie kilku INSERT INTO jedną komendą.", correct: true },
+      { text: "Tworzy nową tabelę.", correct: false },
+      { text: "Połączenie INSERT INTO z SELECT jest inaczej nazywane funkcjonalnością 'UPSERT'.", correct: false },
+      { text: "W odróżnieniu od INSERT INTO połączonego z VALUES, wymaga podania wartości dla wszystkich kolumn docelowej tabeli.", correct: false }
+    ]
+  },
+  {
+    id: "upsert",
+    topic: "INSERT / UPSERT",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat tzw. funkcjonalności 'UPSERT'.",
+    options: [
+      { text: "Korzystamy z niej za pomocą komendy INSERT INTO.", correct: true },
+      { text: "Żeby operacja UPSERT miała sens, w tabeli musi nie być klucza głównego ani warunku NOT NULL.", correct: false },
+      { text: "Polega na zwróceniu słowem RETURNING wartości wygenerowanej przez system bazodanowy.", correct: false },
+      { text: "UPSERT służy do zakończenia błędem operacji, która normalnie wstawiłaby do tabeli niepożądane wiersze.", correct: false }
+    ],
+    note: "UPSERT = INSERT INTO ... ON CONFLICT DO UPDATE. Wymaga klucza unikalnego do wykrycia konfliktu."
+  },
+  {
+    id: "insert-columns-required",
+    topic: "INSERT",
+    type: "multi",
+    question: "W tabeli users mamy cztery kolumny. user_id (klucz główny) jako SERIAL/AUTO_INCREMENT. name VARCHAR(50) NOT NULL. login_data VARCHAR(100) bez dodatkowych warunków. registration jako typ daty z czasem, też bez warunków. Tabela nie ma wyzwalaczy. Używamy komendy INSERT INTO users (???). Które nazwy kolumn MUSZĄ znaleźć się na liście?",
+    options: [
+      { text: "name", correct: true },
+      { text: "login_data", correct: false },
+      { text: "registration", correct: false },
+      { text: "user_id", correct: false }
+    ],
+    note: "Tylko 'name' jest NOT NULL bez DEFAULT i bez auto-generacji."
+  },
+  {
+    id: "default-value",
+    topic: "DEFAULT",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat wartości domyślnej dla kolumny w tabeli SQL.",
+    options: [
+      { text: "Możemy usunąć wartość domyślną dla kolumny bez usuwania i tworzenia ponownie całej kolumny.", correct: true },
+      { text: "Jeśli zdefiniujemy wartość domyślną za pomocą wyrażenia (np. NOW()) zamiast literału, to wyrażenie będzie ewaluowane ponownie za każdym razem, kiedy system bazodanowy używa wartości domyślnej.", correct: true },
+      { text: "Wartość domyślną ustawiamy za pomocą słowa DEFAULT.", correct: true },
+      { text: "Jeśli kolumna ma wartość domyślną, musimy ją pominąć w komendzie INSERT INTO.", correct: false }
+    ]
+  },
+  {
+    id: "alter-drop-column",
+    topic: "DDL",
+    type: "open",
+    question: "Uzupełnij lukę w komendzie modyfikującej strukturę tabeli:\n\n??? TABLE posts DROP COLUMN when_published;",
+    correctAnswer: "ALTER"
+  },
+
+  // ============ SQL INJECTION ============
+  {
+    id: "sql-injection-session",
+    topic: "SQL Injection",
+    type: "open",
+    question: "Aplikacja webowa korzysta z poniższego kodu. Zaproponuj ciąg znaków przekazany jako cookie['session_id'], który uszkodzi bazę tak, żeby potem to samo zapytanie zwracało błąd lub pustą tablicę.\n\ncursor.execute(f'''\n  SELECT session_ttl\n  FROM user_sessions\n  WHERE session_id = '{cookie[\"session_id\"]}' AND\n        user_id = '{cookie[\"user_id\"]}';\n''')",
+    correctAnswer: "'; DROP TABLE user_sessions; --",
+    note: "Albo dowolne destrukcyjne polecenie usuwające/uszkadzające tabelę user_sessions."
+  },
+  {
+    id: "sql-injection-login",
+    topic: "SQL Injection",
+    type: "open",
+    question: "Aplikacja korzysta z poniższego kodu. Zaproponuj ciąg dla get['min_login'] taki, żeby w wyniku zwrócono dwukolumnową tabelę zawierającą m.in. user_password.\n\ncursor.execute(f'''\n  SELECT user_login, user_description\n  FROM users\n  WHERE user_login >= '{get[\"min_login\"]}';\n''')",
+    correctAnswer: "' UNION SELECT user_login, user_password FROM users --"
+  },
+
+  // ============ TRANSAKCJE / RECOVERY ============
+  {
+    id: "isolation-snapshot",
+    topic: "Transakcje",
+    type: "open",
+    question: "Poziom 'read committed' pozwala widzieć zmiany innych zakończonych transakcji w trakcie swojej. Podaj nazwę wybranego poziomu izolacji, który sprawi, że czytając wielokrotnie te same wiersze będziemy widzieli ich 'migawkę' z wcześniejszego momentu.",
+    correctAnswer: "repeatable read (lub serializable)"
+  },
+  {
+    id: "isolation-ordering",
+    topic: "Transakcje",
+    type: "open",
+    question: "Uszereguj poziomy izolacji transakcji od najsłabszej do najsilniejszej izolacji (oddziel przecinkami).",
+    correctAnswer: "read uncommitted, read committed, repeatable read, serializable"
+  },
+  {
+    id: "recovery-491",
+    topic: "Recovery",
+    type: "open",
+    question: "System ponownie uruchomiony po awarii. Tabela accounts: Pancratius 340, Theodore 440, Eugenia 420. ID ostatniej zcommitowanej transakcji: 491. Log:\ntx 491; row 1 (Pancratius, 400) → (Pancratius, 380)\ntx 491; row 2 (Theodore, 400) → (Theodore, 420)\ntx 491; row 1 (Pancratius, 380) → (Pancratius, 360)\ntx 491; row 3 (Eugenia, 400) → (Eugenia, 420)\ntx 492; row 1 (Pancratius, 360) → (Pancratius, 340)\ntx 492; row 2 (Theodore, 420) → (Theodore, 440)\ntx 492; row 1 (Pancratius, 340) → (Pancratius, 320)\n\nJakie będą wartości balance po przywróceniu spójności? (Pancratius, Theodore, Eugenia)",
+    correctAnswer: "Pancratius: 360, Theodore: 420, Eugenia: 420",
+    note: "tx 491 committed → REDO. tx 492 uncommitted → UNDO."
+  },
+  {
+    id: "recovery-8",
+    topic: "Recovery",
+    type: "open",
+    question: "System ponownie uruchomiony po awarii. Tabela accounts: Theodore 940, Pancratius 1040, Eugenia 1020. ID ostatniej zcommitowanej transakcji: 8. Log:\ntx 8; row 1 (Theodore, 1000) → (Theodore, 980)\ntx 8; row 2 (Pancratius, 1000) → (Pancratius, 1020)\ntx 8; row 1 (Theodore, 980) → (Theodore, 960)\ntx 8; row 3 (Eugenia, 1000) → (Eugenia, 1020)\ntx 9; row 1 (Theodore, 960) → (Theodore, 940)\ntx 9; row 2 (Pancratius, 1020) → (Pancratius, 1040)\ntx 9; row 1 (Theodore, 940) → (Theodore, 920)\n\nJakie będą wartości balance po przywróceniu spójności? (Theodore, Pancratius, Eugenia)",
+    correctAnswer: "Theodore: 960, Pancratius: 1020, Eugenia: 1020"
+  },
+
+  // ============ BACKUP / pg_dump ============
+  {
+    id: "pg-basebackup-ext",
+    topic: "Backup",
+    type: "open",
+    question: "Podaj przykład rozszerzenia pliku tworzonego przez program pg_basebackup. (Nie .zip)",
+    correctAnswer: ".tar"
+  },
+  {
+    id: "pg-dump-tar",
+    topic: "Backup",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania dotyczące kopii zapasowych pg_dump i tar.",
+    options: [
+      { text: "pg_dump może wygenerować kopię zapasową w formacie binarnym.", correct: true },
+      { text: "pg_dump może wygenerować kopię zapasową w postaci kodu SQL.", correct: true },
+      { text: "tar może być użyty do stworzenia kopii zapasowej całego klastra.", correct: true },
+      { text: "pg_dump może być użyty do stworzenia kopii zapasowej pojedynczej tabeli.", correct: true },
+      { text: "pg_dump może być użyty do stworzenia kopii zapasowej całego klastra.", correct: false },
+      { text: "tar może być użyty do stworzenia kopii zapasowej pojedynczej tabeli.", correct: false }
+    ],
+    note: "Cały klaster → pg_dumpall (nie pg_dump). tar nie izoluje pojedynczych tabel."
+  },
+  {
+    id: "pg-dump-sizes",
+    topic: "Backup",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania o rozmiarach kopii zapasowych.",
+    options: [
+      { text: "Nieskompresowana kopia pojedynczej tabeli w formacie binarnym jest zwykle mniejsza, niż nieskompresowana kopia w postaci kodu SQL.", correct: true },
+      { text: "Skompresowana kopia pojedynczej tabeli w formacie binarnym będzie często o ok. rząd wielkości mniejsza niż analogiczna, skompresowana kopia w postaci kodu SQL.", correct: false },
+      { text: "Kopia zapasowa wszystkich baz w klastrze wykonana na poziomie systemu plików jest znacząco większa niż analogiczna, nieskompresowana kopia w postaci kodu SQL.", correct: true }
+    ]
+  },
+  {
+    id: "online-backup",
+    topic: "Backup",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania dotyczące konfiguracji tzw. online backup działającego inkrementalnie.",
+    options: [
+      { text: "Przywracanie wymaga skonfigurowania opcji restore_command, przy czym wartością w konfiguracji może być proste wywołanie narzędzia cp.", correct: true },
+      { text: "Typowa konfiguracja polega na użyciu wybranego zewnętrznego narzędzia do regularnego kopiowania plików Write Ahead Log z katalogu pg_wal.", correct: true },
+      { text: "Przy zapoczątkowywaniu kopii zapasowej musimy chwilowo wyłączyć system bazodanowy.", correct: false },
+      { text: "Po zakończeniu przywracania kopii zapasowej należy manualnie usunąć plik-flagę recovery.signal, aby Postgres przy ponownym restarcie nie próbował jeszcze raz rozpoczynać procedury przywracania.", correct: false }
+    ]
+  },
+
+  // ============ POSTGRESQL SPECIFIC ============
+  {
+    id: "pg-procedural",
+    topic: "PostgreSQL",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat możliwości proceduralnego programowania w Postgresie.",
+    options: [
+      { text: "Istnieje podział na funkcje i procedury.", correct: true },
+      { text: "Można zdefiniować procedurę używając zwykłego SQLa zamiast pl/pgSQL.", correct: true },
+      { text: "Można pisać procedury w różnych językach, m.in. Python i Tcl.", correct: true },
+      { text: "Procedury wywołujemy np. wewnątrz zapytania (SELECT nazwa_procedury()).", correct: false }
+    ],
+    note: "Procedury wywołujemy CALL, NIE wewnątrz SELECT (to jest dla funkcji)."
+  },
+  {
+    id: "pg-indexes",
+    topic: "PostgreSQL",
+    type: "multi",
+    question: "Jakie rodzaje indeksów są wspierane przez PostgreSQL?",
+    options: [
+      { text: "indeks GiST, umożliwia np. wydajne znalezienie punktów wewnątrz danego prostokąta", correct: true },
+      { text: "indeks oparty o B-drzewo (B-Tree)", correct: true },
+      { text: "indeks oparty o Hash", correct: true },
+      { text: "indeks klastrujący", correct: false }
+    ],
+    note: "PostgreSQL nie ma klasycznego clustered index (w przeciwieństwie do MS SQL Server)."
+  },
+  {
+    id: "pg-cursors",
+    topic: "PostgreSQL",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat kursorów w PostgreSQL.",
+    options: [
+      { text: "Komenda FETCH FROM cursor INTO variable pobiera pojedynczy rekord z kursora.", correct: true },
+      { text: "Komendą FETCH można pobrać naraz kilka rekordów z kursora.", correct: true },
+      { text: "Istnieją komendy służące m.in. do 'cofania się' w kursorze.", correct: true },
+      { text: "Próba 'cofania się' w kursorze może zakończyć się błędem.", correct: true },
+      { text: "Są dostępne w pl/pgSQL, ale nie w zwykłym SQL.", correct: false }
+    ]
+  },
+  {
+    id: "pg-triggers",
+    topic: "PostgreSQL",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat wyzwalaczy (triggers) w PostgreSQL.",
+    options: [
+      { text: "Mogą zapisywać dane do tabel komendą INSERT INTO.", correct: true },
+      { text: "Mogą być definiowane na widokach.", correct: true },
+      { text: "Mogą się wykonywać jeden raz dla zestawu wielu wierszy zmodyfikowanych pojedynczą komendą.", correct: true },
+      { text: "Mogą służyć do realizowania złożonych warunków integralnościowych.", correct: true },
+      { text: "Mogą blokować operacje komendą RAISE WARNING.", correct: false }
+    ],
+    note: "Aby zablokować operację — RAISE EXCEPTION, nie WARNING."
+  },
+  {
+    id: "returning",
+    topic: "PostgreSQL",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat słowa RETURNING.",
+    options: [
+      { text: "Używa się go w komendzie INSERT INTO.", correct: true },
+      { text: "Jest dostępne w SQL Server ale nie w PostgreSQL ani w MariaDB.", correct: false },
+      { text: "Służy do zamiany operacji wstawienia wiersza na aktualizację, jeśli wstawienie naruszyłoby warunek unikalności.", correct: false },
+      { text: "Jest dostępne w proceduralnym rozszerzeniu do SQL'a ale nie w zwykłym SQLu.", correct: false },
+      { text: "Służy do zwrócenia wartości domyślnej zamiast NULL'a.", correct: false }
+    ],
+    note: "RETURNING w PostgreSQL/MariaDB — zwraca wartości po INSERT/UPDATE/DELETE (np. wygenerowane id)."
+  },
+
+  // ============ SQLite / inne DB ============
+  {
+    id: "sqlite-name",
+    topic: "Systemy bazodanowe",
+    type: "open",
+    question: "Jak nazywa się działający w modelu relacyjnym system bazodanowy, który przechowuje wszystkie tabele bazy w jednym pliku, może być użyty jako biblioteka programistyczna i uchodzi za najbardziej rozpowszechnione oprogramowanie bazodanowe na świecie?",
+    correctAnswer: "SQLite"
+  },
+  {
+    id: "sqlite-usage",
+    topic: "Systemy bazodanowe",
+    type: "multi",
+    question: "Zakładamy systemy w typowej konfiguracji (rok 2025). Które z poniższych są przechowywane w jednoplikowej bazie SQLite?",
+    options: [
+      { text: "favicony i ciasteczka w przeglądarce internetowej z rodziny Mozilli", correct: true },
+      { text: "dane kont użytkowników w systemie z rodziny UNIX", correct: false },
+      { text: "treść zeszytu Jupyter z wykładu prowadzącego", correct: false },
+      { text: "treści postów na blogu Wordpress", correct: false }
+    ],
+    note: "UNIX: pliki tekstowe /etc/passwd, /etc/shadow. Jupyter: JSON .ipynb. Wordpress: MySQL/MariaDB."
+  },
+  {
+    id: "mariadb-grouping",
+    topic: "Systemy bazodanowe",
+    type: "multi",
+    question: "Jak typowo wykonujemy grupowanie w bazie MariaDB?",
+    options: [
+      { text: "Używając klauzuli GROUP BY.", correct: true },
+      { text: "Używając funkcji NASZA_BAZA.NASZA_KOLEKCJA.find().", correct: false },
+      { text: "Używając operacji ZRANGE.", correct: false },
+      { text: "Używając funkcji aggregate() i operacji '$group'.", correct: false }
+    ]
+  },
+  {
+    id: "mongo-ferret",
+    topic: "Systemy bazodanowe",
+    type: "multi",
+    question: "Jakie są typowe zastosowania narzędzia MongoDB/FerretDB?",
+    options: [
+      { text: "Przechowywanie dokumentów JSON w tzw. kolekcjach i przeszukiwanie ich za pomocą aggregation pipeline.", correct: true },
+      { text: "Przechowywanie dokumentów w kolekcjach i przeszukiwanie ich za pomocą języka XQuery.", correct: false },
+      { text: "Przechowywanie danych w modelu klucz-wartość.", correct: false },
+      { text: "Użycie języka SQL do przeszukiwania danych niezapisanych na dysku.", correct: false },
+      { text: "Wykonywanie operacji na dokumentach JSON za pomocą XQuery.", correct: false }
+    ]
+  },
+  {
+    id: "xquery-support",
+    topic: "Systemy bazodanowe",
+    type: "multi",
+    question: "Które z poniższych NIE mają wbudowanego wsparcia dla języka XQuery?",
+    options: [
+      { text: "PostgreSQL", correct: true },
+      { text: "Valkey", correct: true },
+      { text: "BaseX", correct: false }
+    ],
+    note: "BaseX jest natywnym silnikiem XML/XQuery."
+  },
+  {
+    id: "vendors-licenses",
+    topic: "Systemy bazodanowe",
+    type: "open",
+    question: "Dopasuj systemy do producentów i licencji:\nA: SQL Server, B: Db2, C: MySQL\nProducenci: Microsoft, Oracle, IBM\nLicencje: 2× własnościowa (proprietary), 1× wolna (FLOSS)",
+    correctAnswer: "A: Microsoft, proprietary. B: IBM, proprietary. C: Oracle, FLOSS (GPL)."
+  },
+  {
+    id: "model-sql-terms",
+    topic: "Model relacyjny",
+    type: "open",
+    question: "Dopasuj terminy z modelu relacyjnego do SQL: A: krotka (tuple), B: atrybut (attribute), C: relacja (relation)",
+    correctAnswer: "A → wiersz (row). B → kolumna (column). C → tabela (table)."
+  },
+
+  // ============ FLASH / HW ============
+  {
+    id: "flash-memory",
+    topic: "Pamięci",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania o pamięciach flash.",
+    options: [
+      { text: "Najbardziej popularny typ pamięci flash to ten, w którym dostęp do danych następuje blokowo.", correct: true },
+      { text: "W przypadku pamięci dyskowych oraz pamięci flash z dostępem blokowym, zadanie zarządzania blokami (w tym eliminowanie 'złych bloków') należy głównie do systemu zarządzania bazą danych.", correct: false },
+      { text: "Pamięci flash dzielą się na trzy główne typy: NAND, NOR i SSD.", correct: false },
+      { text: "Dostęp do sąsiednich sektorów jest znacząco szybszy niż dostęp do losowych sektorów, bo oszczędzamy na czasie przesuwania głowicy (seek time).", correct: false }
+    ],
+    note: "Flash NIE ma głowicy (to dyski talerzowe). SSD to typ urządzenia, NAND/NOR to typy pamięci flash."
+  },
+
+  // ============ DJANGO / ORM ============
+  {
+    id: "django-foreign-key",
+    topic: "Django / ORM",
+    type: "multi",
+    question: "Co się stanie, jeśli do pola w modelu przypiszemy wartość models.ForeignKey(Namespace, models.CASCADE) i następnie wykonamy migrację?",
+    options: [
+      { text: "Django wygeneruje odpowiedni SQL z ON DELETE CASCADE i doda w bazie warunek klucza obcego.", correct: true },
+      { text: "Model, do którego dodaliśmy to pole, będzie traktowany jako specjalizacja modelu Namespace i będą one w związku 1-1.", correct: false },
+      { text: "Zostanie utworzona nowa tabela łącznikowa.", correct: false },
+      { text: "Obiekty zmienionego modelu zostaną stracone i powinno się je dodać od nowa.", correct: false }
+    ]
+  },
+  {
+    id: "django-defer",
+    topic: "Django / ORM",
+    type: "multi",
+    question: "Do czego może być wykorzystana konstrukcja MyModel.objects.defer('my_field').all() w Django?",
+    options: [
+      { text: "W celach optymalizacji.", correct: true },
+      { text: "Do opóźnienia zapisu obiektów.", correct: false },
+      { text: "Do zmodyfikowania pod kątem przyszłej migracji.", correct: false },
+      { text: "Do modyfikacji danych z odroczonym egzekwowaniem warunków integralnościowych.", correct: false },
+      { text: "Do trwałego otagowania pola w modelu.", correct: false }
+    ],
+    note: "defer() opóźnia załadowanie kolumny — pobierane dopiero przy pierwszym dostępie. Optymalizacja."
+  },
+  {
+    id: "django-tables-count",
+    topic: "Django / ORM",
+    type: "open",
+    question: "Ile tabel zostanie utworzonych na podstawie poniższego modelu?\n\nclass Namespace(models.Model):\n    name = models.CharField(max_length=50, primary_key=True)\n\nclass User(Namespace):\n    hashed_pwd = models.CharField(max_length=100)\n    email = models.CharField(max_length=100)\n\nclass Group(Namespace):\n    members = models.ManyToManyField('forge.User')\n    class Meta:\n        db_table = 'group'\n\nclass Repo(models.Model):\n    namespace = models.ForeignKey(Namespace)\n    repo_name = models.CharField(max_length=50)",
+    correctAnswer: "5",
+    note: "Namespace, User (dziedziczy → osobna tabela bo multi-table inheritance), Group (osobna tabela), Repo, oraz tabela m2m dla Group.members ↔ User. Razem 5."
+  },
+
+  // ============ REDIS / NOSQL ============
+  {
+    id: "redis-ttl",
+    topic: "Redis / NoSQL",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania dotyczące wartości TTL w Redisie.",
+    options: [
+      { text: "W zależności od konfiguracji może mieć wpływ na kolejność eksmisji (eviction) kluczy.", correct: true },
+      { text: "Decyduje o tym, ile 'hopów' może wykonać pakiet z informacją do replikacji.", correct: false },
+      { text: "Decyduje o tym, jak długo mają być przechowywane pliki umożliwiające przywrócenie starych kopii bazy.", correct: false },
+      { text: "Musi być podana przy każdym użyciu komendy ADD.", correct: false },
+      { text: "Decyduje o tym, jak długo rozgłaszana jest (broadcast) do klientów informacja o zmianie.", correct: false }
+    ]
+  },
+  {
+    id: "redis-idempotent",
+    topic: "Redis / NoSQL",
+    type: "multi",
+    question: "Które operacje są idempotentne? Pod zmiennymi _int i cli znajdują się obiekty udostępniające interfejsy do narzędzi z wykładu. Posortowany zbiór (sorted set) nigdy nie zawiera duplikatów.",
+    options: [
+      { text: "vk.zadd(b'players:ranking', {'theodore': 120})", correct: true },
+      { text: "cli.some_db.some_col.update_one({'x': 0}, {'$set': {'x': 1}})", correct: true },
+      { text: "vk.zrange(b'players:ranking', 0, 2)", correct: true },
+      { text: "cli.some_db.some_col.update_many({'x': 0}, {'$pop': {'x': 1}})", correct: false },
+      { text: "vk.lpush(b'messages', 'Let\\'s get back to times…')", correct: false }
+    ],
+    note: "lpush dodaje za każdym razem. update_many z $pop usuwa elementy — kolejne wywołania zmieniają stan."
+  },
+
+  // ============ TYPY DANYCH ============
+  {
+    id: "decimal-10-4",
+    topic: "Typy danych",
+    type: "multi",
+    question: "Które liczby mogą być dokładnie reprezentowane przez typ DECIMAL(10, 4)?",
+    options: [
+      { text: "2^6 − (1/2)^4 (= 63,9375)", correct: true },
+      { text: "999 999,9999", correct: true },
+      { text: "2^10 − (1/2)^4 (= 1 023,9375)", correct: true },
+      { text: "2^4 − (1/2)^6 (= 15,984375)", correct: false },
+      { text: "9 999,999999", correct: false },
+      { text: "9 999 999 999,9999", correct: false }
+    ],
+    note: "DECIMAL(10,4): 10 cyfr łącznie, 4 po przecinku = max 6 przed + 4 po. Każda cyfra musi mieścić się w tym formacie."
+  },
+  {
+    id: "time-types",
+    topic: "Typy danych",
+    type: "open",
+    question: "Standard SQL definiuje sześć typów danych związanych z czasem. Podaj nazwy dwóch z nich.",
+    correctAnswer: "DATE, TIME, TIMESTAMP, INTERVAL, TIME WITH TIME ZONE, TIMESTAMP WITH TIME ZONE (podaj dowolne 2)"
+  },
+
+  // ============ SQL OGÓLNE ============
+  {
+    id: "sql-language",
+    topic: "SQL ogólne",
+    type: "multi",
+    question: "Wybierz prawdziwe zdania na temat języka SQL.",
+    options: [
+      { text: "Umożliwia definiowanie (struktury) danych (defining schema of data).", correct: true },
+      { text: "Umożliwia tworzenie zapytań o dane z bazy (data querying).", correct: true },
+      { text: "Jego nazwa powstała przez usunięcie samogłosek z pierwotnej nazwy 'SEQUEL'.", correct: false },
+      { text: "Aktualny na rok 2025 standard ISO języka jest w 100% implementowany jedynie przez bazę PostgreSQL.", correct: false }
+    ],
+    note: "SEQUEL → SQL bo nazwa była zastrzeżona (firma Hawker Siddeley), nie z powodu usunięcia samogłosek."
+  },
+  {
+    id: "where-used",
+    topic: "SQL ogólne",
+    type: "multi",
+    question: "Gdzie często spotykamy użycie klauzuli WHERE?",
+    options: [
+      { text: "W komendzie DELETE.", correct: true },
+      { text: "W komendzie UPDATE.", correct: true },
+      { text: "W komendzie INSERT INTO table_name VALUES.", correct: true },
+      { text: "W komendzie INSERT INTO table_name SELECT.", correct: false }
+    ],
+    note: "WHERE w INSERT...SELECT to WHERE wewnątrz SELECT, nie samego INSERT INTO."
+  },
+  {
+    id: "acid",
+    topic: "SQL ogólne",
+    type: "open",
+    question: "Rozwiń dowolne 3 litery ze skrótu ACID.",
+    correctAnswer: "Atomicity, Consistency, Isolation, Durability (dowolne 3)"
+  },
+
+  // ============ COMPOSITE / TYPES ============
+  {
+    id: "composite-type-query",
+    topic: "Typy złożone",
+    type: "multi",
+    question: "Wykonaliśmy poniższe zapytanie i dostaliśmy kilka wierszy w wyniku (bez funkcji użytkownika). Wybierz prawdziwe zdania.\n\nSELECT name,\n       (pwd).*,\n       (pwd).salt || '$' || (pwd).hash AS salt_hash\nFROM users_secure;",
+    options: [
+      { text: "users_secure może spełniać 3NF.", correct: true },
+      { text: "W tabeli wynikowej było przynajmniej 5 kolumn.", correct: false },
+      { text: "pwd jest nazwą typu podaną w komendzie CREATE TYPE.", correct: false },
+      { text: "pwd jest nazwą tabeli w bazie.", correct: false },
+      { text: "salt jest nazwą kolumny podaną w komendzie CREATE TABLE.", correct: false }
+    ],
+    note: "pwd to KOLUMNA tabeli users_secure o typie złożonym; salt to POLE tego typu (z CREATE TYPE)."
+  },
+
+  // ============ FILE UPDATE / KONKURENCJA ============
+  {
+    id: "file-update-problems",
+    topic: "Konkurencja",
+    type: "multi",
+    question: "Aplikacja aktualizuje dane w pliku app-data.txt:\n\ndata = read_data_from_file('app-data.txt')\nupdate_data(data, command_line_arguments)\nwrite_data_to_file(data, 'app-data-tmp.txt')\nsync_data_to_disk()\nrename_file('app-data-tmp.txt', 'app-data.txt')\n\nJakie problemy może napotkać aplikacja?",
+    options: [
+      { text: "Jeśli jednocześnie uruchomionych zostanie kilka instancji, może nastąpić konflikt w dostępie do pliku i błędne działanie.", correct: true },
+      { text: "Jeśli danych jest dużo, a aktualizowana jest tylko mała część, działanie aplikacji jest nieoptymalne pod względem wydajności.", correct: true },
+      { text: "W wyniku np. nagłej utraty zasilania może dojść do sytuacji, gdzie plik app-data.txt zostanie uszkodzony i część starych danych zostanie utracona.", correct: false }
+    ],
+    note: "Wzorzec write-tmp + rename JEST atomic na poziomie FS — chroni przed utratą zasilania. Ale nie ma lockingu i jest nieoptymalny."
+  },
+  {
+    id: "nosql-single-file-safety",
+    topic: "Konkurencja",
+    type: "multi",
+    question: "Współtworzysz silnik nowej, jednoplikowej, nierelacyjnej bazy danych. Sytuacja, w której kilka procesów jednocześnie operuje na pliku bazy, jest niepożądana. Które działania NIE wystarczą do zabezpieczenia oprogramowania przed taką sytuacją?",
+    options: [
+      { text: "Wymuszenie zapisania danych na dysku (np. os.fsync() w Pythonie).", correct: true },
+      { text: "Zapisywanie danych pierw do pliku tymczasowego (z suffixem '.tmp') i dopiero potem zastępowanie właściwego pliku bazy.", correct: true },
+      { text: "Wymuszenie przekazania danych z bufora pliku do jądra (np. flush() w Pythonie).", correct: true },
+      { text: "Synchronizacja na pliku z użyciem mechanizmu flock (np. fcntl.flock() w Pythonie).", correct: false }
+    ],
+    note: "Tylko flock() rozwiązuje problem konkurencji. fsync/flush/tmp+rename to inne problemy."
+  },
+
+  // ============ KOD PYTHON / TERMINACJA ============
+  {
+    id: "python-redis-loops",
+    topic: "Terminacja kodu",
+    type: "multi",
+    question: "Które programy zakończą wykonanie? (Bez limitów pamięci.) Pod _int jest obiekt udostępniający interfejs do narzędzia z wykładu.",
+    options: [
+      { text: "_int.delete(b'lectures:17')\n_int.set(b'lectures:17', b'{\"id\": \"nosql-databases\"}')\nlecture = b'initially bytes'\nwhile type(lecture) is bytes:\n    lecture = _int.get(b'lectures:17')\nif type(lecture) is str:\n    print('type is str')", correct: false },
+      { text: "_int.delete(b'lectures:17')\n_int.set(b'lectures:17', b'{\"id\": \"nosql-databases\"}', ex=10)\nlecture = 'initially not None'\nwhile lecture:\n    lecture = _int.get(b'lectures:17')", correct: true },
+      { text: "_int.delete(b'messages')\nwhile len(_int.lrange(b'messages', 0, 100)) < 99:\n    _int.lpush(b'messages', 'Let\\'s get back to times…')", correct: true },
+      { text: "_int.delete(b'lectures:17')\n_int.hset(b'lectures:17', b'title', b'NoSQL Databases')\ntitle = 'initially not None'\nwhile title:\n    title = _int.hget(b'lectures:17', b'title')", correct: false }
+    ],
+    note: "Drugi: TTL=10s, klucz zniknie, get() zwróci None → wyjście. Trzeci: rośnie lista. Pierwszy/czwarty: nieskończona pętla."
+  },
+  {
+    id: "pg-functions-terminate",
+    topic: "Terminacja kodu",
+    type: "multi",
+    question: "Które funkcje zakończą wykonanie?",
+    options: [
+      { text: "CREATE FUNCTION get_it(i INT) RETURNS SETOF INTEGER AS $$ BEGIN IF i > 1 THEN RETURN QUERY SELECT get_it(i - 1); END IF; RETURN NEXT i; END $$ LANGUAGE plpgsql; SELECT get_it(40);", correct: true },
+      { text: "CREATE FUNCTION get_it(i INT) RETURNS INTEGER AS $$ DECLARE d INT := 2; BEGIN LOOP IF i % d = 0 THEN RETURN d; END IF; d := d + 1; END LOOP; END $$ LANGUAGE plpgsql; SELECT get_it(40);", correct: true },
+      { text: "CREATE FUNCTION get_it(i INT) RETURNS SETOF INTEGER AS $$ BEGIN LOOP i := (i + 1) % 1000; IF i > 10 THEN RETURN NEXT i; END IF; END LOOP; END $$ LANGUAGE plpgsql; SELECT get_it(0);", correct: false }
+    ],
+    note: "Trzeci nigdy nie wychodzi z pętli (brak EXIT/RETURN całej funkcji)."
+  },
+
+  // ============ INDEKSY ============
+  {
+    id: "indexes-min",
+    topic: "Indeksy",
+    type: "open",
+    question: "Załóżmy, że tworzymy indeksy dla wyrażeń θ_i i tylko dla nich. Jaka minimalna liczba indeksów jest konieczna, żeby system bazodanowy mógł zrezygnować ze skanowania sekwencyjnego dla poniższej operacji?\n\nσ_θ1 ∨ σ_θ2 ∧ σ_θ3 ∨ σ_θ4 ∨ σ_θ5",
+    correctAnswer: "4",
+    note: "Operacja po uproszczeniu: θ1 ∨ (θ2 ∧ θ3) ∨ θ4 ∨ θ5 — potrzebne indeksy dla θ1, θ2 LUB θ3, θ4, θ5 = 4."
+  }
+];
+
+// ====================== LOGIKA / UI ======================
+const app = document.getElementById('app');
+const typeLabel = { single: "jednokrotny wybór", multi: "wielokrotny wybór", open: "otwarte" };
+
+// stan
+let state = null;
+
+function fyShuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// ---------- START SCREEN ----------
+let startCfg = {
+  length: 10,                       // 10 | 20 | 'all'
+  topics: new Set(QUESTIONS.map(q => q.topic)),
+};
+
+function topicCounts() {
+  const m = new Map();
+  for (const q of QUESTIONS) m.set(q.topic, (m.get(q.topic) || 0) + 1);
+  return m;
+}
+
+function availableCount() {
+  return QUESTIONS.filter(q => startCfg.topics.has(q.topic)).length;
+}
+
+function renderStart() {
+  const counts = topicCounts();
+  const topics = [...counts.keys()].sort((a, b) => a.localeCompare(b, 'pl'));
+  const avail = availableCount();
+
+  const lenOpts = [
+    { v: 10, l: "10 pytań" },
+    { v: 20, l: "20 pytań" },
+    { v: "all", l: "Wszystkie" },
+  ];
+
+  app.innerHTML = `
+    <h1>Test BD — WIEiT</h1>
+    <p class="sub">Lokalna aplikacja do nauki SQL / baz danych.</p>
+
+    <div class="panel">
+      <p class="label">Długość testu</p>
+      <div class="row">
+        ${lenOpts.map(o => `
+          <button class="len-opt ${startCfg.length === o.v ? 'on' : ''}" data-len="${o.v}">${o.l}</button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="panel">
+      <p class="label">Tematy (kliknij, by włączyć/wyłączyć)</p>
+      <div class="row" id="chips">
+        ${topics.map(t => `
+          <button class="chip ${startCfg.topics.has(t) ? 'on' : ''}" data-topic="${esc(t)}">
+            ${esc(t)}<span class="cnt">${counts.get(t)}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="link-btn" id="selAll">Zaznacz wszystkie</button>
+        <button class="link-btn" id="selNone">Odznacz wszystkie</button>
+      </div>
+    </div>
+
+    <p class="counter">Baza: <strong>${QUESTIONS.length}</strong> pytań · do dyspozycji: <strong>${avail}</strong></p>
+
+    <button class="btn-primary btn-lg" id="startBtn" ${avail === 0 ? 'disabled' : ''}>Start</button>
+  `;
+
+  app.querySelectorAll('[data-len]').forEach(b => b.onclick = () => {
+    const v = b.dataset.len;
+    startCfg.length = v === 'all' ? 'all' : Number(v);
+    renderStart();
+  });
+  app.querySelectorAll('[data-topic]').forEach(b => b.onclick = () => {
+    const t = b.dataset.topic;
+    if (startCfg.topics.has(t)) startCfg.topics.delete(t); else startCfg.topics.add(t);
+    renderStart();
+  });
+  app.querySelector('#selAll').onclick = () => { startCfg.topics = new Set(counts.keys()); renderStart(); };
+  app.querySelector('#selNone').onclick = () => { startCfg.topics = new Set(); renderStart(); };
+  app.querySelector('#startBtn').onclick = startTest;
+}
+
+// ---------- BUILD SESSION ----------
+function buildSession(pool, lengthCfg) {
+  let qs = fyShuffle(pool);
+  if (lengthCfg !== 'all') qs = qs.slice(0, lengthCfg);
+  // dla każdego pytania przygotuj kolejność opcji
+  const items = qs.map(q => {
+    const item = { q, answered: false, correct: false, userAnswer: null };
+    if (q.type === 'single' || q.type === 'multi') {
+      item.order = fyShuffle(q.options.map((_, i) => i));
+    }
+    return item;
+  });
+  return { items, idx: 0 };
+}
+
+function startTest() {
+  const pool = QUESTIONS.filter(q => startCfg.topics.has(q.topic));
+  if (pool.length === 0) return;
+  state = buildSession(pool, startCfg.length);
+  renderQuestion();
+}
+
+function startRetryWrong(wrongQuestions) {
+  state = buildSession(wrongQuestions, 'all');
+  renderQuestion();
+}
+
+// ---------- QUESTION SCREEN ----------
+function renderQuestion() {
+  const { items, idx } = state;
+  const item = items[idx];
+  const q = item.q;
+  const total = items.length;
+  const pct = Math.round((idx) / total * 100);
+
+  let body = '';
+  if (q.type === 'open') {
+    body = `<textarea id="answer" placeholder="Wpisz odpowiedź...">${item.userAnswer ? esc(item.userAnswer) : ''}</textarea>`;
+  } else {
+    body = `<div id="opts">` + item.order.map((origIdx, pos) => {
+      const opt = q.options[origIdx];
+      return `<div class="opt" data-type="${q.type}" data-orig="${origIdx}">
+        <div class="box"></div>
+        <div class="txt">${esc(opt.text)}</div>
+      </div>`;
+    }).join('') + `</div>`;
+  }
+
+  app.innerHTML = `
+    <div class="progress"><div style="width:${pct}%"></div></div>
+    <div class="meta">Pytanie ${idx + 1} / ${total} · <span class="topic">${esc(q.topic)}</span> · ${typeLabel[q.type]}</div>
+    <div class="panel">
+      <div class="qtext">${esc(q.question)}</div>
+      ${body}
+      <div id="feedback"></div>
+      <div class="actions" id="actions">
+        <button class="link-btn" id="quitBtn">Wyjdź</button>
+        <div class="spacer"></div>
+        <button class="btn-primary" id="checkBtn">Sprawdź</button>
+      </div>
+    </div>
+  `;
+
+  app.querySelector('#quitBtn').onclick = () => {
+    if (confirm("Wyjść z testu? Postęp zostanie utracony.")) renderStart();
+  };
+
+  if (q.type !== 'open') {
+    const selected = new Set();
+    app.querySelectorAll('.opt').forEach(el => {
+      el.onclick = () => {
+        if (item.answered) return;
+        const orig = Number(el.dataset.orig);
+        if (q.type === 'single') {
+          selected.clear();
+          app.querySelectorAll('.opt').forEach(o => { o.classList.remove('sel'); o.querySelector('.box').textContent = ''; });
+          selected.add(orig);
+          el.classList.add('sel');
+          el.querySelector('.box').textContent = '●';
+        } else {
+          if (selected.has(orig)) {
+            selected.delete(orig);
+            el.classList.remove('sel');
+            el.querySelector('.box').textContent = '';
+          } else {
+            selected.add(orig);
+            el.classList.add('sel');
+            el.querySelector('.box').textContent = '✓';
+          }
+        }
+      };
+    });
+    item._selected = selected;
+  }
+
+  app.querySelector('#checkBtn').onclick = () => checkAnswer(item);
+}
+
+function checkAnswer(item) {
+  const q = item.q;
+  const fb = app.querySelector('#feedback');
+
+  if (q.type === 'open') {
+    const ta = app.querySelector('#answer');
+    item.userAnswer = ta.value;
+    ta.disabled = true;
+    item.answered = true;
+    fb.innerHTML = `
+      <div class="answer-box">
+        <div class="label">Poprawna odpowiedź</div>
+        <div>${esc(q.correctAnswer)}</div>
+      </div>
+      ${q.note ? `<div class="note">${esc(q.note)}</div>` : ''}
+      <div class="verdict">Oceń się sam:</div>
+    `;
+    app.querySelector('#actions').innerHTML = `
+      <button class="link-btn" id="quitBtn2">Wyjdź</button>
+      <div class="spacer"></div>
+      <button id="selfBad">✗ Źle</button>
+      <button class="btn-primary" id="selfOk">✓ Miałem dobrze</button>
+    `;
+    app.querySelector('#quitBtn2').onclick = () => { if (confirm("Wyjść z testu?")) renderStart(); };
+    app.querySelector('#selfOk').onclick = () => { item.correct = true; next(); };
+    app.querySelector('#selfBad').onclick = () => { item.correct = false; next(); };
+    return;
+  }
+
+  // single / multi
+  const selected = item._selected;
+  item.userAnswer = [...selected];
+  item.answered = true;
+
+  const correctSet = new Set(q.options.map((o, i) => o.correct ? i : -1).filter(i => i >= 0));
+  let ok = selected.size === correctSet.size;
+  for (const s of selected) if (!correctSet.has(s)) ok = false;
+  item.correct = ok;
+
+  app.querySelectorAll('.opt').forEach(el => {
+    const orig = Number(el.dataset.orig);
+    el.classList.add('disabled');
+    el.onclick = null;
+    const isCorrect = correctSet.has(orig);
+    const isSel = selected.has(orig);
+    if (isCorrect) el.classList.add('correct');
+    if (isSel && !isCorrect) el.classList.add('wrong');
+  });
+
+  const last = state.idx === state.items.length - 1;
+  fb.innerHTML = `
+    <div class="verdict ${ok ? 'ok' : 'bad'}">${ok ? '✓ Dobrze' : '✗ Źle'}</div>
+    ${q.note ? `<div class="note">${esc(q.note)}</div>` : ''}
+  `;
+  app.querySelector('#actions').innerHTML = `
+    <button class="link-btn" id="quitBtn2">Wyjdź</button>
+    <div class="spacer"></div>
+    <button class="btn-primary" id="nextBtn">${last ? 'Zakończ' : 'Następne'}</button>
+  `;
+  app.querySelector('#quitBtn2').onclick = () => { if (confirm("Wyjść z testu?")) renderStart(); };
+  app.querySelector('#nextBtn').onclick = next;
+}
+
+function next() {
+  if (state.idx < state.items.length - 1) {
+    state.idx++;
+    renderQuestion();
+  } else {
+    renderResult();
+  }
+}
+
+// ---------- RESULT SCREEN ----------
+function fmtUserAnswer(item) {
+  const q = item.q;
+  if (q.type === 'open') {
+    return item.userAnswer && item.userAnswer.trim()
+      ? esc(item.userAnswer) + (item.correct ? '  (oceniono: dobrze)' : '  (oceniono: źle)')
+      : '(brak odpowiedzi)' + (item.correct ? ' (oceniono: dobrze)' : ' (oceniono: źle)');
+  }
+  const sel = item.userAnswer || [];
+  if (sel.length === 0) return '(nic nie zaznaczono)';
+  return sel.map(i => esc(q.options[i].text)).join('; ');
+}
+
+function fmtCorrectAnswer(q) {
+  if (q.type === 'open') return esc(q.correctAnswer);
+  return q.options.filter(o => o.correct).map(o => esc(o.text)).join('; ');
+}
+
+function renderResult() {
+  const items = state.items;
+  const total = items.length;
+  const score = items.filter(i => i.correct).length;
+  const pct = total ? Math.round(score / total * 100) : 0;
+  const wrongQuestions = items.filter(i => !i.correct).map(i => i.q);
+
+  app.innerHTML = `
+    <h1>Wynik</h1>
+    <div class="panel" style="text-align:center">
+      <div class="score-big">${score} / ${total}</div>
+      <div class="score-pct">${pct}%</div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" id="newTest">Nowy test</button>
+      <button id="retryWrong" ${wrongQuestions.length === 0 ? 'disabled' : ''}>
+        Powtórz tylko błędne (${wrongQuestions.length})
+      </button>
+    </div>
+
+    <h2>Pełny przegląd</h2>
+    <div id="review">
+      ${items.map((item, n) => {
+        const q = item.q;
+        return `
+          <div class="review-item ${item.correct ? 'good' : 'bad'}">
+            <div class="meta">${n + 1}. <span class="topic">${esc(q.topic)}</span> · ${typeLabel[q.type]} · ${item.correct ? '✓' : '✗'}</div>
+            <div class="rq">${esc(q.question)}</div>
+            <div class="ans"><span class="k">Twoja odpowiedź:</span> ${fmtUserAnswer(item)}</div>
+            <div class="ans"><span class="k">Poprawna:</span> ${fmtCorrectAnswer(q)}</div>
+            ${q.note ? `<div class="note">${esc(q.note)}</div>` : ''}
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+
+  app.querySelector('#newTest').onclick = renderStart;
+  const rw = app.querySelector('#retryWrong');
+  if (wrongQuestions.length > 0) rw.onclick = () => startRetryWrong(wrongQuestions);
+}
+
+// ---------- BOOT ----------
+renderStart();
+</script>
+</body>
+</html>
