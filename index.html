@@ -231,18 +231,17 @@ const QUESTIONS = [
   // ============ ROLE I UPRAWNIENIA ============
   {
     id: "roles-reporter-reader",
-    topic: "Role / uprawnienia",
-    type: "single",
-    question: "Użytkownik ma przypisaną rolę 'reporter', a rola reporter ma przypisaną rolę 'reader'. Rola 'reader' ma uprawnienia do czytania wierszy w tabeli 'posts'. Roli 'reporter' nie przekazano bezpośrednio takich uprawnień. Co musi zrobić użytkownik, żeby móc przeczytać wiersze z tabeli 'posts'?",
-    options: [
-      { text: "Ustawić swoją aktualną rolę na 'reporter'.", correct: true },
-      { text: "Ustawić swoją aktualną rolę na 'reader'.", correct: false },
-      { text: "Użyć komendy GRANT nazwa_roli TO nazwa_użytkownika.", correct: false },
-      { text: "Podać hasło do roli 'reader'.", correct: false },
-      { text: "Podać hasło do roli 'reporter'.", correct: false },
-      { text: "Zdobyć od administratora więcej uprawnień, niż przyznano mu do tej pory.", correct: false }
-    ],
-    note: "SET ROLE reporter — przyjmujesz rolę reporter, która dziedziczy reader → masz SELECT."
+  topic: "Role / uprawnienia",
+  type: "single",
+  question: "Użytkownik ma przypisaną rolę 'reporter' (z atrybutem NOINHERIT), a rola reporter ma przypisaną rolę 'reader'. Rola 'reader' ma uprawnienia do czytania wierszy w tabeli 'posts'. Roli 'reporter' nie przekazano bezpośrednio takich uprawnień. Co musi zrobić użytkownik, żeby móc przeczytać wiersze z tabeli 'posts'?",
+  options: [
+    { text: "Użyć komendy SET ROLE (np. SET ROLE reporter lub SET ROLE reader).", correct: true },
+    { text: "Użyć komendy GRANT nazwa_roli TO nazwa_użytkownika.", correct: false },
+    { text: "Podać hasło do roli 'reader'.", correct: false },
+    { text: "Podać hasło do roli 'reporter'.", correct: false },
+    { text: "Zdobyć od administratora więcej uprawnień, niż przyznano mu do tej pory.", correct: false }
+  ],
+  note: "Przy NOINHERIT trzeba aktywować rolę przez SET ROLE — i w PG działa to też dla ról dziedziczonych transitively (więc SET ROLE reporter lub SET ROLE reader — oba zadziałają). Bez NOINHERIT (domyślne) uprawnienia działałyby od razu."
   },
   {
     id: "roles-analyst-viewer",
@@ -337,16 +336,16 @@ const QUESTIONS = [
   },
   {
     id: "nf-dependency-preserving",
-    topic: "Normalizacja",
-    type: "single",
-    question: "Przeprowadzana przez nas dekompozycja schematu bazy zachowuje zależności ('is dependency preserving'). Tzn. dla każdej zależności funkcjonalnej wciąż można znaleźć taki schemat relacji, w którym znajdują się razem wszystkie atrybuty obu stron tej zależności. Uzyskany schemat bazy na pewno nie jest w:",
-    options: [
-      { text: "BCNF", correct: true },
-      { text: "3NF", correct: false },
-      { text: "4NF", correct: false },
-      { text: "1NF", correct: false }
-    ],
-    note: "Dekompozycja zachowująca zależności + lossless join — gwarantowana tylko do 3NF, NIE do BCNF."
+  topic: "Normalizacja",
+  type: "single",
+  question: "Przeprowadzana przez nas dekompozycja schematu bazy zachowuje zależności ('is dependency preserving') oraz jest bezstratna (lossless join). Do której najwyższej postaci normalnej taka dekompozycja jest GWARANTOWANA?",
+  options: [
+    { text: "3NF", correct: true },
+    { text: "BCNF", correct: false },
+    { text: "4NF", correct: false },
+    { text: "5NF", correct: false }
+  ],
+  note: "Algorytm syntezy gwarantuje 3NF z zachowaniem zależności i lossless join. BCNF z dependency preservation NIE zawsze jest osiągalna — czasem trzeba poświęcić jedno albo drugie."
   },
 
   // ============ ALGEBRA RELACYJNA ============
@@ -413,11 +412,11 @@ const QUESTIONS = [
   },
   {
     id: "join-self-distinct",
-    topic: "JOIN",
-    type: "open",
-    question: "W tabeli users kluczem głównym jest user_id, a liczba wszystkich wierszy to 15. Ile będzie wierszy w wyniku zapytania?\n\nSELECT DISTINCT u1.user_name, u2.user_name FROM users u1 JOIN users u2 USING(user_id);",
-    correctAnswer: "15",
-    note: "USING(user_id) → join po user_id (PK), więc każdy wiersz łączy się sam ze sobą → 15 par (każdy z samym sobą)."
+  topic: "JOIN",
+  type: "open",
+  question: "W tabeli users kluczem głównym jest user_id, a liczba wszystkich wierszy to 15. Zakładamy, że wszystkie wartości user_name są unikalne. Ile będzie wierszy w wyniku zapytania?\n\nSELECT DISTINCT u1.user_name, u2.user_name FROM users u1 JOIN users u2 USING(user_id);",
+  correctAnswer: "15",
+  note: "USING(user_id) → join po user_id (PK), więc każdy wiersz łączy się sam ze sobą → 15 par. DISTINCT nie zredukuje, bo user_name unikalne."
   },
   {
     id: "join-cross-less",
@@ -462,11 +461,11 @@ const QUESTIONS = [
   },
   {
     id: "where-uk",
-    topic: "SELECT / WHERE",
-    type: "open",
-    question: "Jakim najkrótszym ciągiem znaków można uzupełnić lukę (zastąpić ciąg pytajników), żeby w wyniku otrzymać dokładnie wiersze klientów spoza Wielkiej Brytanii ('UK')?\n\nSELECT *\nFROM customers\nWHERE country ??? 'UK';",
-    correctAnswer: "<>",
-    note: "Najkrótsze: <> (alternatywa dla !=). UWAGA: NULL country nie zostanie zwrócony — zwykle to akceptowalne."
+  topic: "SELECT / WHERE",
+  type: "open",
+  question: "Jakim najkrótszym ciągiem znaków można uzupełnić lukę (zastąpić ciąg pytajników), żeby w wyniku otrzymać dokładnie wiersze klientów spoza Wielkiej Brytanii ('UK')?\n\nSELECT *\nFROM customers\nWHERE country ??? 'UK';",
+  correctAnswer: "<> (lub !=)",
+  note: "Najkrótsze: <> lub != (oba dwuznakowe, standardowe). UWAGA: NULL w country nie zostanie zwrócony — zwykle to akceptowalne."
   },
   {
     id: "where-bottle",
@@ -1002,17 +1001,17 @@ const QUESTIONS = [
     note: "SEQUEL → SQL bo nazwa była zastrzeżona (firma Hawker Siddeley), nie z powodu usunięcia samogłosek."
   },
   {
-    id: "where-used",
-    topic: "SQL ogólne",
-    type: "multi",
-    question: "Gdzie często spotykamy użycie klauzuli WHERE?",
-    options: [
-      { text: "W komendzie DELETE.", correct: true },
-      { text: "W komendzie UPDATE.", correct: true },
-      { text: "W komendzie INSERT INTO table_name VALUES.", correct: true },
-      { text: "W komendzie INSERT INTO table_name SELECT.", correct: false }
-    ],
-    note: "WHERE w INSERT...SELECT to WHERE wewnątrz SELECT, nie samego INSERT INTO."
+      id: "where-used",
+  topic: "SQL ogólne",
+  type: "multi",
+  question: "Gdzie często spotykamy użycie klauzuli WHERE?",
+  options: [
+    { text: "W komendzie DELETE.", correct: true },
+    { text: "W komendzie UPDATE.", correct: true },
+    { text: "W komendzie INSERT INTO table_name VALUES.", correct: false },
+    { text: "W komendzie INSERT INTO table_name SELECT.", correct: true }
+  ],
+  note: "INSERT...VALUES NIE ma WHERE — to nie ma sensu. INSERT...SELECT MA WHERE (jest częścią SELECT)."
   },
   {
     id: "acid",
